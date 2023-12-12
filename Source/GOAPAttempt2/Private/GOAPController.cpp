@@ -5,7 +5,8 @@
 #include "GOAPBrainComponent.h"
 #include "GOAPCharacter.h"
 
-AGOAPController::AGOAPController()
+AGOAPController::AGOAPController() :
+	Super()
 {
 	BrainComponent = CreateDefaultSubobject<UGOAPBrainComponent>("Brain");
 	GOAPBrain = Cast<UGOAPBrainComponent>(BrainComponent);
@@ -13,6 +14,8 @@ AGOAPController::AGOAPController()
 
 void AGOAPController::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (auto Temp = Cast<AGOAPCharacter>(GetPawn()))
 	{
 		GOAPAgent = Temp;

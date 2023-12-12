@@ -15,6 +15,7 @@ enum class WorldState
 
 	IsNearTree,
 	IsNearBuyer,
+	IsNearSeller,
 	
 	HaveWood,
 	HaveAxe,
