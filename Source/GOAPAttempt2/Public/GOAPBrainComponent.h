@@ -33,11 +33,14 @@ private:
 	Goal CurrentGoal;
 	std::stack<TObjectPtr<UAction>> ActionChain;
 
+	bool DoOnce;
+
 private:
 	//returns true when a new chain should be created
 	void DecideGoal(Goal& NewGoal) const;
 	void CreateChain();
 	bool ChainActionFor(const DesiredState& DS);
+	void ExecuteChain(float DeltaTime);
 	void ClearChain();
 
 	void SetWorldStates();
@@ -54,5 +57,5 @@ private:
 		CannotSatisfyPrecondition,
 		FailedToCreateChainForGoal
 	};
-	void PrintDebug(DebugMessage Message) const;
+	void PrintDebug(DebugMessage Message, UAction* Action = nullptr) const;
 };

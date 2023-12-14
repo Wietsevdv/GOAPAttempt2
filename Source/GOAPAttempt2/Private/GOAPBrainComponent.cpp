@@ -16,7 +16,8 @@
 
 UGOAPBrainComponent::UGOAPBrainComponent() :
 	Super(),
-	CurrentGoal{}
+	CurrentGoal{},
+	DoOnce{ false }
 {
 	SetWorldStates();
 	SetActions();
@@ -33,6 +34,9 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (DoOnce)
+		return;
+
 	Goal NewGoal{};
 	DecideGoal(NewGoal);
 
@@ -47,6 +51,10 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		CreateChain();
 		//just update current chain (could be that this chain is fully executed. In that case also make a new chain. Don't just restart)
 	}
+
+	ExecuteChain(DeltaTime);
+
+	DoOnce = true;
 }
 
 
@@ -79,9 +87,6 @@ void UGOAPBrainComponent::CreateChain()
 	{
 		PrintDebug(DebugMessage::FailedToCreateChainForGoal);
 	}
-
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Chain Created");
 }
 
 bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
@@ -101,9 +106,13 @@ bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
 			const auto& PAPreconditions = PossibleAction->GetPreconditions();
 			for (auto& PAPrecondition : PAPreconditions)
 			{
+				//continue to next PC if this one is already met
+				if (*WorldStates.Find(PAPrecondition.first) == PAPrecondition.second)
+					continue;
+
 				if (!ChainActionFor(PAPrecondition))
 				{
-					PrintDebug(DebugMessage::CannotSatisfyPrecondition);
+					PrintDebug(DebugMessage::CannotSatisfyPrecondition, PossibleAction);
 					return false;
 				}
 			}
@@ -113,13 +122,22 @@ bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
 		}
 		else
 		{
-			PrintDebug(DebugMessage::NoActionForDesiredState);
+			PrintDebug(DebugMessage::NoActionForDesiredState, PossibleAction);
 		}
 	}
 	else
 		PrintDebug(DebugMessage::NoActionForDesiredState);
 
 	return false;
+}
+
+void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
+{
+	if (ActionChain.empty())
+		return;
+
+	TObjectPtr<UAction> ActionToExecute = ActionChain.top();
+	auto& blabal = ActionToExecute->GetPreconditions();
 }
 
 void UGOAPBrainComponent::ClearChain()
@@ -149,6 +167,13 @@ void UGOAPBrainComponent::SetWorldStates()
 
 	//economics
 	WorldStates.Emplace(WorldState::HaveMoney, false);
+	WorldStates.Emplace(WorldState::HaveWater, true);	//true for now
+	WorldStates.Emplace(WorldState::HaveFood, true);	//true for now
+
+	//locations
+	WorldStates.Emplace(WorldState::IsNearTree, false);
+	WorldStates.Emplace(WorldState::IsNearBuyer, false);
+	WorldStates.Emplace(WorldState::IsNearSeller, false);
 }
 
 void UGOAPBrainComponent::SetActions()
@@ -187,7 +212,7 @@ void UGOAPBrainComponent::AddAction(TObjectPtr<UAction> Action)
 	}
 }
 
-void UGOAPBrainComponent::PrintDebug(DebugMessage Message) const
+void UGOAPBrainComponent::PrintDebug(DebugMessage Message, UAction* Action) const
 {
 #ifdef UE_BUILD_DEBUG
 
@@ -210,12 +235,22 @@ void UGOAPBrainComponent::PrintDebug(DebugMessage Message) const
 		case DebugMessage::NoActionForDesiredState:
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, "UGOAPBrainComponent:: Chaining actions, but no action has the desired consequence");
+			if (Action)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta, Action->GetName());
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta, Action->GetFName().ToString());
+			}
 		}
 		break;
 
 		case DebugMessage::CannotSatisfyPrecondition:
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, "UGOAPBrainComponent:: Chaining actions, but precondition could not be satisfied");
+			if (Action)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta, Action->GetName());
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta, Action->GetFName().ToString());
+			}
 		}
 		break;
 
@@ -224,12 +259,6 @@ void UGOAPBrainComponent::PrintDebug(DebugMessage Message) const
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, "UGOAPBrainComponent:: Failed to create an action chain for the goal");
 		}
 		break;
-
-		default:
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, "UGOAPBrainComponent:: default error report");
-			}
-			break;
 		}
 	}
 
