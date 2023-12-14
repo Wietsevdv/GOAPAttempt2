@@ -3,10 +3,11 @@
 
 #include "Actions/DrinkWater.h"
 
-void UDrinkWater::StartAction(AGOAPController* AgentController) const
+void UDrinkWater::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
 {
-}
-
-void UDrinkWater::UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const
-{
+	if (GEngine && AgentController)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Drinking Water");
+		bActionFinished = true;
+	}
 }

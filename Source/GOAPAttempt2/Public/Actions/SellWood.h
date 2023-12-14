@@ -14,14 +14,13 @@ class GOAPATTEMPT2_API USellWood : public UAction
 {
 	GENERATED_BODY()
 	
-public:
-	const TArray<Precondition> Preconditions{ { WorldState::HaveWood, true }, { WorldState::IsNearBuyer, true } };
-	const TArray<Consequence> Consequences{ { WorldState::HaveMoney, true } };
+private:
+	inline static const TArray<Precondition> Preconditions{ { WorldState::HaveWood, true }, { WorldState::IsNearBuyer, true } };
+	inline static const TArray<Consequence> Consequences{ { WorldState::HaveMoney, true } };
 
 public:
 	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
 	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
 
-	virtual void StartAction(AGOAPController* AgentController) const;
-	virtual void UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const;
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const override;
 };

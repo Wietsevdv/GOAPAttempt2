@@ -6,11 +6,12 @@
 #include "BrainComponent.h"
 
 #include <utility>
-#include <stack>
+#include <queue>
 #include "WorldStates.h"
 
 #include "GOAPBrainComponent.generated.h"
 
+class AGOAPController;
 class UAction;
 
 UCLASS()
@@ -31,9 +32,11 @@ private:
 	TArray<Goal> Goals;
 
 	Goal CurrentGoal;
-	std::stack<TObjectPtr<UAction>> ActionChain;
+	std::queue<TObjectPtr<UAction>> ActionChain;
 
-	bool DoOnce;
+	TObjectPtr<AGOAPController> OwningController;
+
+	bool Stop;
 
 private:
 	//returns true when a new chain should be created

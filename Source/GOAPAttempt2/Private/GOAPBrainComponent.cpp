@@ -2,8 +2,7 @@
 
 
 #include "GOAPBrainComponent.h"
-
-#include <algorithm>
+#include "GOAPController.h"
 
 #include "Actions/ChopTree.h"
 #include "Actions/SellWood.h"
@@ -17,7 +16,8 @@
 UGOAPBrainComponent::UGOAPBrainComponent() :
 	Super(),
 	CurrentGoal{},
-	DoOnce{ false }
+	OwningController{ nullptr },
+	Stop{ false }
 {
 	SetWorldStates();
 	SetActions();
@@ -27,14 +27,15 @@ UGOAPBrainComponent::UGOAPBrainComponent() :
 void UGOAPBrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	OwningController = Cast<AGOAPController>(GetOwner());
 }
 
 void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (DoOnce)
+	if (Stop)
 		return;
 
 	Goal NewGoal{};
@@ -53,17 +54,7 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 
 	ExecuteChain(DeltaTime);
-
-	DoOnce = true;
 }
-
-
-
-
-
-
-
-
 
 void UGOAPBrainComponent::DecideGoal(Goal& NewGoal) const
 {
@@ -136,8 +127,15 @@ void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
 	if (ActionChain.empty())
 		return;
 
-	TObjectPtr<UAction> ActionToExecute = ActionChain.top();
-	auto& blabal = ActionToExecute->GetPreconditions();
+	bool bIsActionFinished{ false };
+	TObjectPtr<UAction> TopAction = ActionChain.front();
+
+	TopAction->Execute(OwningController, bIsActionFinished, DeltaTime);
+	if (bIsActionFinished)
+		ActionChain.pop();
+
+	if (ActionChain.empty())
+		Stop = true;
 }
 
 void UGOAPBrainComponent::ClearChain()

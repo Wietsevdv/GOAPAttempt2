@@ -14,14 +14,13 @@ class GOAPATTEMPT2_API UDrinkWater : public UAction
 {
 	GENERATED_BODY()
 	
-public:
-	const TArray<Precondition> Preconditions{ { WorldState::HaveWater, true } };
-	const TArray<Consequence> Consequences{ { WorldState::IsThirsty, false } };
+private:
+	inline static const TArray<Precondition> Preconditions{ { WorldState::HaveWater, true } };
+	inline static const TArray<Consequence> Consequences{ { WorldState::IsThirsty, false } };
 
 public:
 	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
 	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
 
-	virtual void StartAction(AGOAPController* AgentController) const;
-	virtual void UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const;
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const override;
 };

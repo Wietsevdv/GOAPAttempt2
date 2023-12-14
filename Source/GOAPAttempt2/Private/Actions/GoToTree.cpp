@@ -3,10 +3,11 @@
 
 #include "Actions/GoToTree.h"
 
-void UGoToTree::StartAction(AGOAPController* AgentController) const
+void UGoToTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
 {
-}
-
-void UGoToTree::UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const
-{
+	if (GEngine && AgentController)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Going To Tree");
+		bActionFinished = true;
+	}
 }

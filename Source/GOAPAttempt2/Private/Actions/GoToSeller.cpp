@@ -3,10 +3,11 @@
 
 #include "Actions/GoToSeller.h"
 
-void UGoToSeller::StartAction(AGOAPController* AgentController) const
+void UGoToSeller::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
 {
-}
-
-void UGoToSeller::UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const
-{
+	if (GEngine && AgentController)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Going To Seller");
+		bActionFinished = true;
+	}
 }

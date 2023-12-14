@@ -14,14 +14,13 @@ class GOAPATTEMPT2_API UGoToBuyer : public UAction
 {
 	GENERATED_BODY()
 	
-public:
-	const TArray<Precondition> Preconditions{  };
-	const TArray<Consequence> Consequences{ { WorldState::IsNearBuyer, true } };
+private:
+	inline static const TArray<Precondition> Preconditions{  };
+	inline static const TArray<Consequence> Consequences{ { WorldState::IsNearBuyer, true } };
 
 public:
 	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
 	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
 
-	virtual void StartAction(AGOAPController* AgentController) const;
-	virtual void UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const;
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const override;
 };

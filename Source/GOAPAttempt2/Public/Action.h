@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+	// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,8 +20,7 @@ public:
 	virtual const TArray<Precondition>& GetPreconditions() const PURE_VIRTUAL(UAction::GetPreconditions, return Preconditions;);
 	virtual const TArray<Consequence>& GetConsequences() const PURE_VIRTUAL(UAction::GetConsequences, return Consequences;);
 
-	virtual void StartAction(AGOAPController* AgentController) const PURE_VIRTUAL(UAction::StartAction, );
-	virtual void UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const PURE_VIRTUAL(UAction::UpdateAction, );
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const PURE_VIRTUAL(UAction::UpdateAction, );
 
 private:
 	const TArray<Precondition> Preconditions{};

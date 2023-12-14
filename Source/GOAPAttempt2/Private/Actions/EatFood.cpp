@@ -3,10 +3,11 @@
 
 #include "Actions/EatFood.h"
 
-void UEatFood::StartAction(AGOAPController* AgentController) const
+void UEatFood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
 {
-}
-
-void UEatFood::UpdateAction(AGOAPController* AgentController, bool& bActionFinished, float DeltaTime) const
-{
+	if (GEngine && AgentController)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Eating Food");
+		bActionFinished = true;
+	}
 }
