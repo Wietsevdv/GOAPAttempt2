@@ -2,12 +2,29 @@
 
 
 #include "Actions/GoToSeller.h"
+#include "Kismet/GameplayStatics.h"
 
-void UGoToSeller::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
+#include "GOAPController.h"
+#include "Seller.h"
+
+#include "Navigation/PathFollowingComponent.h"
+
+void UGoToSeller::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
-	if (GEngine && AgentController)
+	if (!Started)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Going To Seller");
-		bActionFinished = true;
+		Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>()));
+
+		if (Seller)
+		{
+			if (AgentController->MoveToActor(Seller, 3.f) == EPathFollowingRequestResult::Failed && GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "GoToSeller could not get a path to follow");
+			}
+		}
+
+		Started = true;
 	}
+
+
 }

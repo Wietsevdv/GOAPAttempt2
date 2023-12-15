@@ -31,4 +31,4 @@ using Precondition = std::pair<WorldState, bool>;
 using Consequence = std::pair<WorldState, bool>;
 using DesiredState = std::pair<WorldState, bool>;
 
-using Goal = std::pair<Precondition, DesiredState>;
+using ConditionalGoal = std::pair<Precondition, DesiredState>;

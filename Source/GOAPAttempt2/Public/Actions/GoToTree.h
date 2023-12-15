@@ -6,15 +6,16 @@
 #include "Action.h"
 #include "GoToTree.generated.h"
 
-/**
- * 
- */
+class ATree;
+
 UCLASS()
-class GOAPATTEMPT2_API UGoToTree : public UAction
+class GOAPATTEMPT2_API UGoToTree : private UAction
 {
 	GENERATED_BODY()
 	
 private:
+	TObjectPtr<ATree> Tree{ nullptr };
+
 	inline static const TArray<Precondition> Preconditions{  };
 	inline static const TArray<Consequence> Consequences{ { WorldState::IsNearTree, true } };
 
@@ -22,5 +23,5 @@ public:
 	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
 	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
 
-	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const override;
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) override;
 };

@@ -29,18 +29,16 @@ protected:
 private:
 	TMap<WorldState, bool> WorldStates;
 	TMap<WorldState, TArray<TObjectPtr<UAction>>> Actions;
-	TArray<Goal> Goals;
+	TArray<ConditionalGoal> Goals;
 
-	Goal CurrentGoal;
+	DesiredState CurrentGoal;
 	std::queue<TObjectPtr<UAction>> ActionChain;
 
 	TObjectPtr<AGOAPController> OwningController;
 
-	bool Stop;
-
 private:
 	//returns true when a new chain should be created
-	void DecideGoal(Goal& NewGoal) const;
+	void DecideGoal(DesiredState& NewGoal) const;
 	void CreateChain();
 	bool ChainActionFor(const DesiredState& DS);
 	void ExecuteChain(float DeltaTime);

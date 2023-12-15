@@ -3,7 +3,7 @@
 
 #include "Actions/SellWood.h"
 
-void USellWood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
+void USellWood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (GEngine && AgentController)
 	{

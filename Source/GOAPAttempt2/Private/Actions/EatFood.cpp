@@ -3,7 +3,7 @@
 
 #include "Actions/EatFood.h"
 
-void UEatFood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
+void UEatFood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (GEngine && AgentController)
 	{

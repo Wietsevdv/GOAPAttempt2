@@ -16,8 +16,7 @@
 UGOAPBrainComponent::UGOAPBrainComponent() :
 	Super(),
 	CurrentGoal{},
-	OwningController{ nullptr },
-	Stop{ false }
+	OwningController{ nullptr }
 {
 	SetWorldStates();
 	SetActions();
@@ -35,10 +34,7 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (Stop)
-		return;
-
-	Goal NewGoal{};
+	DesiredState NewGoal{};
 	DecideGoal(NewGoal);
 
 	if (CurrentGoal != NewGoal)
@@ -56,14 +52,14 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	ExecuteChain(DeltaTime);
 }
 
-void UGOAPBrainComponent::DecideGoal(Goal& NewGoal) const
+void UGOAPBrainComponent::DecideGoal(DesiredState& NewGoal) const
 {
-	for (const Goal& Goal : Goals)
+	for (const ConditionalGoal& Goal : Goals)
 	{
 		const bool* State = WorldStates.Find(Goal.first.first);
 		if (State && *State == Goal.first.second)
 		{
-			NewGoal = Goal;
+			NewGoal = Goal.second;
 			return;
 		}
 
@@ -74,7 +70,7 @@ void UGOAPBrainComponent::DecideGoal(Goal& NewGoal) const
 
 void UGOAPBrainComponent::CreateChain()
 {
-	if (!ChainActionFor(CurrentGoal.second))
+	if (!ChainActionFor(CurrentGoal))
 	{
 		PrintDebug(DebugMessage::FailedToCreateChainForGoal);
 	}
@@ -82,22 +78,20 @@ void UGOAPBrainComponent::CreateChain()
 
 bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
 {
-	//get actions that effect the desired WS
 	auto PossibleActionsP = Actions.Find(DS.first);
 	auto& PossibleActions = *PossibleActionsP;
 	if (PossibleActionsP && PossibleActions.Num())
 	{
-		//for now let's just take the first action.
-		//check if its effect on the WS is the desired one
+		//check if its effect on the WS is the desired one (true or false)	(for now we just take the first action. Comparing different options is for later (KISS))
 		auto PossibleAction = PossibleActions[0].Get();
 		const auto& PAConsequences = PossibleAction->GetConsequences();
-		if (PAConsequences.Find(DS) >= 0)
+		if (PAConsequences.Find(DS) != INDEX_NONE)
 		{
-			//this action has the desired consequence. Now check its PC and find actions to satisfy them before adding this action
+			//check its PC and find actions to satisfy them before adding this action
 			const auto& PAPreconditions = PossibleAction->GetPreconditions();
 			for (auto& PAPrecondition : PAPreconditions)
 			{
-				//continue to next PC if this one is already met
+				//continue to next PC if this one is already satisfied
 				if (*WorldStates.Find(PAPrecondition.first) == PAPrecondition.second)
 					continue;
 
@@ -112,9 +106,7 @@ bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
 			return true;
 		}
 		else
-		{
 			PrintDebug(DebugMessage::NoActionForDesiredState, PossibleAction);
-		}
 	}
 	else
 		PrintDebug(DebugMessage::NoActionForDesiredState);
@@ -133,9 +125,6 @@ void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
 	TopAction->Execute(OwningController, bIsActionFinished, DeltaTime);
 	if (bIsActionFinished)
 		ActionChain.pop();
-
-	if (ActionChain.empty())
-		Stop = true;
 }
 
 void UGOAPBrainComponent::ClearChain()

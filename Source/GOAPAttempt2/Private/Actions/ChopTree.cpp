@@ -2,12 +2,31 @@
 
 
 #include "Actions/ChopTree.h"
+#include "Kismet/GameplayStatics.h"
 
-void UChopTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const
+#include "GOAPController.h"
+#include "Tree.h"
+
+void UChopTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
-	if (GEngine && AgentController)
+	if (!Started)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, "Chopping Tree");
+		//start animation
+
+		Tree = Cast<ATree>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ATree>()));
+	}
+
+	//repeat chopping if its a singular chop
+	
+	//either damage tree with each chop, 
+	// or a number of chops 
+	// or a timer
+	Timer += DeltaTime;
+	if (Timer >= 3.f)
+	{
+		Timer = 0.f;
+		Tree = nullptr;
+		Started = false;
 		bActionFinished = true;
 	}
 }

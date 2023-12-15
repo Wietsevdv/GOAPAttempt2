@@ -17,12 +17,14 @@ class GOAPATTEMPT2_API UAction : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual const TArray<Precondition>& GetPreconditions() const PURE_VIRTUAL(UAction::GetPreconditions, return Preconditions;);
-	virtual const TArray<Consequence>& GetConsequences() const PURE_VIRTUAL(UAction::GetConsequences, return Consequences;);
+	virtual const TArray<Precondition>& GetPreconditions() const PURE_VIRTUAL(UAction::GetPreconditions, return Empty;);
+	virtual const TArray<Consequence>& GetConsequences() const PURE_VIRTUAL(UAction::GetConsequences, return Empty;);
+	
+	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) PURE_VIRTUAL(UAction::UpdateAction, );
 
-	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) const PURE_VIRTUAL(UAction::UpdateAction, );
+protected:
+	bool Started{ false };
 
 private:
-	const TArray<Precondition> Preconditions{};
-	const TArray<Consequence> Consequences{};
+	const TArray<Precondition> Empty{};
 };
