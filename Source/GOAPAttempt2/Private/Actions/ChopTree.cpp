@@ -13,7 +13,7 @@ void UChopTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActi
 	{
 		//start animation
 
-		Tree = Cast<ATree>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ATree>()));
+		Tree = Cast<ATree>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ATree>(ATree::StaticClass())));
 	}
 
 	//repeat chopping if its a singular chop
@@ -22,11 +22,13 @@ void UChopTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActi
 	// or a number of chops 
 	// or a timer
 	Timer += DeltaTime;
-	if (Timer >= 3.f)
+	if (Timer >= 2.f)
 	{
+		Started = false;
+
 		Timer = 0.f;
 		Tree = nullptr;
-		Started = false;
+
 		bActionFinished = true;
 	}
 }

@@ -5,6 +5,7 @@
 
 #include <utility>
 
+UENUM()
 enum class WorldState
 {
 	IsHungry,
@@ -23,6 +24,8 @@ enum class WorldState
 	HaveFood,
 
 	HaveMoney,
+
+	Chilling
 };
 
 //using Precondition = TPair<WorldStates, bool>;

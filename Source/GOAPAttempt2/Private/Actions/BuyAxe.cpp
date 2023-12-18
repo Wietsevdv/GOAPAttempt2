@@ -1,19 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/SellWood.h"
+#include "Actions/BuyAxe.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "GOAPController.h"
 #include "Seller.h"
 
-void USellWood::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
+void UBuyAxe::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (!Started)
 	{
-		Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>()));
-
-		Started = true;
+		Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>(ASeller::StaticClass())));
 	}
 
 	Timer += DeltaTime;

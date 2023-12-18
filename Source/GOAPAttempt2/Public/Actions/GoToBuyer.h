@@ -9,19 +9,22 @@
 class ABuyer;
 
 UCLASS()
-class GOAPATTEMPT2_API UGoToBuyer : private UAction
+class GOAPATTEMPT2_API UGoToBuyer : public UAction
 {
 	GENERATED_BODY()
 	
 private:
 	TObjectPtr<ABuyer> Buyer{ nullptr };
+	bool bHasReached{ false };
+
+	void SetHasReached() { bHasReached = true; }
 
 	inline static const TArray<Precondition> Preconditions{  };
-	inline static const TArray<Consequence> Consequences{ { WorldState::IsNearBuyer, true } };
+	inline static const TArray<Consequence> Consequences{ { WorldState::IsNearBuyer, true }, { WorldState::IsNearTree, false }, { WorldState::IsNearSeller, false } };
 
 public:
-	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
-	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
+	virtual const TArray<Precondition>& GetPreconditions() const override { return Preconditions; }
+	virtual const TArray<Consequence>& GetConsequences() const override { return Consequences; }
 
 	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) override;
 };

@@ -28,27 +28,39 @@ protected:
 
 private:
 	TMap<WorldState, bool> WorldStates;
+
+	//this variable's sole purpose is to prevent the actions from being garbage collected
+	//Not sure if I can do this without creating this extra array since using UPropery on the map gives the error that I can't use TArray<UAction*> as a value for the map
+	UPROPERTY()
+	TArray<UAction*> AllActions;
+
 	TMap<WorldState, TArray<TObjectPtr<UAction>>> Actions;
+
 	TArray<ConditionalGoal> Goals;
 
 	DesiredState CurrentGoal;
+
 	std::queue<TObjectPtr<UAction>> ActionChain;
 
 	TObjectPtr<AGOAPController> OwningController;
 
 private:
 	//returns true when a new chain should be created
+	void UpdateGoal();
 	void DecideGoal(DesiredState& NewGoal) const;
 	void CreateChain();
-	bool ChainActionFor(const DesiredState& DS);
+	bool ChainActionFor(const DesiredState& DS, TMap<WorldState, bool>& WorldStatesCopy);
+	bool IsAnyPreconditionFalse(const TArray<Precondition>& Preconditions, TArray<Precondition>& UnmetPreconditions, const TMap<WorldState, bool>& WorldStatesCopy);
 	void ExecuteChain(float DeltaTime);
+	void ApplyWorldStateChanges(TObjectPtr<UAction> Action, TMap<WorldState, bool>& WorldStatesToChange);
+	void ApplyWorldStateChanges(const TArray<Consequence>& Consequences, TMap<WorldState, bool>& WorldStatesToChange);
 	void ClearChain();
 
 	void SetWorldStates();
 	void SetActions();
 	void SetGoals();
 
-	void AddAction(TObjectPtr<UAction>);
+	void AddAction(TObjectPtr<UAction> Action);
 
 	enum class DebugMessage
 	{

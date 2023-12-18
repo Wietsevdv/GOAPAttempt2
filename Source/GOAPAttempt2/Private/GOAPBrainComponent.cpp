@@ -6,6 +6,7 @@
 
 #include "Actions/ChopTree.h"
 #include "Actions/SellWood.h"
+#include "Actions/BuyAxe.h"
 #include "Actions/EatFood.h"
 #include "Actions/DrinkWater.h"
 
@@ -15,7 +16,7 @@
 
 UGOAPBrainComponent::UGOAPBrainComponent() :
 	Super(),
-	CurrentGoal{},
+	CurrentGoal{ WorldState::Chilling, true },		//guaranteed to be overwritten (for now)+=
 	OwningController{ nullptr }
 {
 	SetWorldStates();
@@ -33,8 +34,14 @@ void UGOAPBrainComponent::BeginPlay()
 void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
+	UpdateGoal();
+	ExecuteChain(DeltaTime);
+}
 
-	DesiredState NewGoal{};
+void UGOAPBrainComponent::UpdateGoal()
+{	
+	DesiredState NewGoal{ WorldState::Chilling, true };		//guaranteed to be overwritten (for now)
 	DecideGoal(NewGoal);
 
 	if (CurrentGoal != NewGoal)
@@ -46,10 +53,7 @@ void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	else if (ActionChain.empty())
 	{
 		CreateChain();
-		//just update current chain (could be that this chain is fully executed. In that case also make a new chain. Don't just restart)
 	}
-
-	ExecuteChain(DeltaTime);
 }
 
 void UGOAPBrainComponent::DecideGoal(DesiredState& NewGoal) const
@@ -70,48 +74,71 @@ void UGOAPBrainComponent::DecideGoal(DesiredState& NewGoal) const
 
 void UGOAPBrainComponent::CreateChain()
 {
-	if (!ChainActionFor(CurrentGoal))
+	TMap<WorldState, bool> WorldStatesCopy{ WorldStates };
+	if (!ChainActionFor(CurrentGoal, WorldStatesCopy))
 	{
 		PrintDebug(DebugMessage::FailedToCreateChainForGoal);
 	}
 }
 
-bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS)
+bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS, TMap<WorldState, bool>& WorldStatesCopy)
 {
-	auto PossibleActionsP = Actions.Find(DS.first);
-	auto& PossibleActions = *PossibleActionsP;
-	if (PossibleActionsP && PossibleActions.Num())
+	auto ActionsThatEffectDSWorldStateP = Actions.Find(DS.first);
+	if (ActionsThatEffectDSWorldStateP == nullptr || ActionsThatEffectDSWorldStateP->Num() == 0)
 	{
-		//check if its effect on the WS is the desired one (true or false)	(for now we just take the first action. Comparing different options is for later (KISS))
-		auto PossibleAction = PossibleActions[0].Get();
-		const auto& PAConsequences = PossibleAction->GetConsequences();
-		if (PAConsequences.Find(DS) != INDEX_NONE)
-		{
-			//check its PC and find actions to satisfy them before adding this action
-			const auto& PAPreconditions = PossibleAction->GetPreconditions();
-			for (auto& PAPrecondition : PAPreconditions)
-			{
-				//continue to next PC if this one is already satisfied
-				if (*WorldStates.Find(PAPrecondition.first) == PAPrecondition.second)
-					continue;
+		PrintDebug(DebugMessage::NoActionForDesiredState);
+		return false;
+	}
 
-				if (!ChainActionFor(PAPrecondition))
+	for (TObjectPtr<UAction> Action : *ActionsThatEffectDSWorldStateP)
+	{
+		const auto& Consequences = Action->GetConsequences();
+		if (Consequences.Find(DS) != INDEX_NONE)
+		{
+			//a chained action can change the WorldStateCopy needing other actions to satisfy PC that were previously satisfied but not anymore, so -> while-loop
+			TArray<Precondition> PreconditionsToSatisfy{};
+			const TArray<Precondition>& Preconditions = Action->GetPreconditions();
+			while (IsAnyPreconditionFalse(Preconditions, PreconditionsToSatisfy, WorldStatesCopy))
+			{
+				for (const auto& Precondition : PreconditionsToSatisfy)
 				{
-					PrintDebug(DebugMessage::CannotSatisfyPrecondition, PossibleAction);
-					return false;
+					if (!ChainActionFor(Precondition, WorldStatesCopy))
+					{
+						//this is wrong, when an action cannot chain try other possibilities instead of immediately returning false
+						//comparing different options is for later (KISS), need a more complex example anyway
+						PrintDebug(DebugMessage::CannotSatisfyPrecondition, Action);
+						return false;
+					}
 				}
 			}
+			
+			ApplyWorldStateChanges(Consequences, WorldStatesCopy);
+			ActionChain.push(Action);
 
-			ActionChain.emplace(PossibleAction);
 			return true;
 		}
-		else
-			PrintDebug(DebugMessage::NoActionForDesiredState, PossibleAction);
 	}
-	else
-		PrintDebug(DebugMessage::NoActionForDesiredState);
 
 	return false;
+}
+
+bool UGOAPBrainComponent::IsAnyPreconditionFalse(const TArray<Precondition>& Preconditions, TArray<Precondition>& UnmetPreconditions, const TMap<WorldState, bool>& WorldStatesCopy)
+{
+	bool bHasFalsePrecondition{ false };
+	UnmetPreconditions.Empty();
+
+	for (const auto& Precondition : Preconditions)
+	{
+		if (*WorldStatesCopy.Find(Precondition.first) == Precondition.second)
+			continue;
+		else
+		{
+			UnmetPreconditions.Add(Precondition);
+			bHasFalsePrecondition = true;
+		}
+	}
+
+	return bHasFalsePrecondition;
 }
 
 void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
@@ -124,18 +151,32 @@ void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
 
 	TopAction->Execute(OwningController, bIsActionFinished, DeltaTime);
 	if (bIsActionFinished)
+	{
+		ApplyWorldStateChanges(TopAction, WorldStates);
 		ActionChain.pop();
+	}
+}
+
+void UGOAPBrainComponent::ApplyWorldStateChanges(TObjectPtr<UAction> Action, TMap<WorldState, bool>& WorldStatesToChange)
+{
+	ApplyWorldStateChanges(Action->GetConsequences(), WorldStatesToChange);
+}
+
+void UGOAPBrainComponent::ApplyWorldStateChanges(const TArray<Consequence>& Consequences, TMap<WorldState, bool>& WorldStatesToChange)
+{
+	for (const auto& Consequence : Consequences)
+	{
+		if (bool* State = WorldStatesToChange.Find(Consequence.first))
+		{
+			*State = Consequence.second;
+		}
+	}
 }
 
 void UGOAPBrainComponent::ClearChain()
 {
 	if (!ActionChain.empty())
-	{
-		for (size_t i{}; i < ActionChain.size(); ++i)
-		{
-			ActionChain.pop();
-		}
-	}
+		ActionChain = std::queue<TObjectPtr<UAction>>();
 }
 
 //----------CONSTRUCTION----------
@@ -167,6 +208,7 @@ void UGOAPBrainComponent::SetActions()
 {
 	AddAction(CreateDefaultSubobject<UChopTree>("Action_ChopTree"));
 	AddAction(CreateDefaultSubobject<USellWood>("Action_SellWood"));
+	AddAction(CreateDefaultSubobject<UBuyAxe>("Action_BuyAxe"));
 	AddAction(CreateDefaultSubobject<UDrinkWater>("Action_DrinkWater"));
 	AddAction(CreateDefaultSubobject<UEatFood>("Action_EatFood"));
 
@@ -179,17 +221,19 @@ void UGOAPBrainComponent::SetGoals()
 {	
 	//Previous element has higher priority
 	Goals.Emplace(Precondition{ WorldState::IsInDanger, true }, DesiredState{ WorldState::IsInDanger, false });
-	
 	Goals.Emplace(Precondition{ WorldState::IsDamaged, true }, DesiredState{ WorldState::IsDamaged, false });
 	Goals.Emplace(Precondition{ WorldState::IsThirsty, true }, DesiredState{ WorldState::IsThirsty, false });
 	Goals.Emplace(Precondition{ WorldState::IsHungry, true }, DesiredState{ WorldState::IsHungry, false });
 
 	Goals.Emplace(Precondition{ WorldState::HaveMoney, false }, DesiredState{ WorldState::HaveMoney, true });
+	Goals.Emplace(Precondition{ WorldState::HaveAxe, false }, DesiredState{ WorldState::HaveAxe, true });
 }
 
 void UGOAPBrainComponent::AddAction(TObjectPtr<UAction> Action)
 {
-	const TArray<Consequence>& Consequences = Action.Get()->GetConsequences();
+	AllActions.Add(Action.Get());
+
+	const TArray<Consequence>& Consequences = Action->GetConsequences();
 	for (auto& Consq : Consequences)
 	{
 		if (auto ActionsForConseq = Actions.Find(Consq.first))

@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class GOAPATTEMPT2_API UEatFood : private UAction
+class GOAPATTEMPT2_API UEatFood : public UAction
 {
 	GENERATED_BODY()
 	
@@ -19,8 +19,8 @@ private:
 	inline static const TArray<Consequence> Consequences{ { WorldState::IsHungry, false } };
 
 public:
-	virtual const TArray<Precondition>& GetPreconditions() const { return Preconditions; }
-	virtual const TArray<Consequence>& GetConsequences() const { return Consequences; }
+	virtual const TArray<Precondition>& GetPreconditions() const override { return Preconditions; }
+	virtual const TArray<Consequence>& GetConsequences() const override { return Consequences; }
 
 	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) override;
 };

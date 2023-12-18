@@ -4,21 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Action.h"
-#include "ChopTree.generated.h"
+#include "BuyAxe.generated.h"
 
-class ATree;
+class ASeller;
 
 UCLASS()
-class GOAPATTEMPT2_API UChopTree : public UAction
+class GOAPATTEMPT2_API UBuyAxe : public UAction
 {
 	GENERATED_BODY()
 	
 private:
-	TObjectPtr<ATree> Tree{ nullptr };
 	float Timer{ 0.f };
+	TObjectPtr<ASeller> Seller{ nullptr };
 
-	inline static const TArray<Precondition> Preconditions{ { WorldState::HaveAxe, true }, { WorldState::IsNearTree, true } };
-	inline static const TArray<Consequence> Consequences{ { WorldState::HaveWood, true }, { WorldState::HaveAxe, false } };
+	inline static const TArray<Precondition> Preconditions{ { WorldState::IsNearSeller, true }, { WorldState::HaveMoney, true } };
+	inline static const TArray<Consequence> Consequences{ { WorldState::HaveMoney, false }, { WorldState::HaveAxe, true } };
 
 public:
 	virtual const TArray<Precondition>& GetPreconditions() const override { return Preconditions; }

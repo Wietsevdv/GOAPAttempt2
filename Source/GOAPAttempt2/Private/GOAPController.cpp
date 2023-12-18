@@ -6,10 +6,16 @@
 #include "GOAPCharacter.h"
 
 AGOAPController::AGOAPController() :
-	Super()
+	Super(),
+	DReachedGoTo{}
 {
 	BrainComponent = CreateDefaultSubobject<UGOAPBrainComponent>("Brain");
 	GOAPBrain = Cast<UGOAPBrainComponent>(BrainComponent);
+}
+
+void AGOAPController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	DReachedGoTo.ExecuteIfBound();
 }
 
 void AGOAPController::BeginPlay()

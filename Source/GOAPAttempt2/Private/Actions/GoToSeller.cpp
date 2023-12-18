@@ -13,18 +13,28 @@ void UGoToSeller::Execute(TObjectPtr<AGOAPController> AgentController, bool& bAc
 {
 	if (!Started)
 	{
-		Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>()));
-
-		if (Seller)
+		if (Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>(ASeller::StaticClass()))))
 		{
-			if (AgentController->MoveToActor(Seller, 3.f) == EPathFollowingRequestResult::Failed && GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "GoToSeller could not get a path to follow");
-			}
+			const auto RequestResult = AgentController->MoveToActor(Seller, 3.f);
+
+			if (RequestResult == EPathFollowingRequestResult::Failed && GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "GoToBuyer could not get a path to follow");
+			else
+				AgentController->GetReachedGoToDelegate().BindUObject(this, &UGoToSeller::SetHasReached);
 		}
 
 		Started = true;
 	}
 
+	if (bHasReached)
+	{
+		Started = false;
+	
+		Seller = nullptr;
 
+		bHasReached = false;
+		AgentController->GetReachedGoToDelegate().Unbind();
+
+		bActionFinished = true;
+	}
 }

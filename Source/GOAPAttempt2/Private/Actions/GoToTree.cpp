@@ -13,20 +13,28 @@ void UGoToTree::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActi
 {
 	if (!Started)
 	{
-		Tree = Cast<ATree>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ATree>()));
-
-		if (Tree)
+		if (Tree = Cast<ATree>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ATree>(ATree::StaticClass()))))
 		{
-			if (AgentController->MoveToActor(Tree, 3.f) == EPathFollowingRequestResult::Type::Failed && GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "GoToTree could not get a path to follow");
-			}
+			const auto RequestResult = AgentController->MoveToActor(Tree, 100.f);
+
+			if (RequestResult == EPathFollowingRequestResult::Failed && GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "GoToBuyer could not get a path to follow");
+			else
+				AgentController->GetReachedGoToDelegate().BindUObject(this, &UGoToTree::SetHasReached);
 		}
 
 		Started = true;
 	}
 	
-	AgentController->GetPathFollowingComponent()->HasReached(Tree, EPathFollowingReachMode::ExactLocation);
+	if (bHasReached)
+	{		
+		Started = false;
 
-	if (AgentController->GetPawn()->GetDistanceTo(Tree) )
+		Tree = nullptr;
+
+		bHasReached = false;
+		AgentController->GetReachedGoToDelegate().Unbind();
+
+		bActionFinished = true;
+	}
 }
