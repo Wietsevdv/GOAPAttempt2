@@ -3,7 +3,7 @@
 
 #include "Actions/DrinkWater.h"
 
-void UDrinkWater::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
+void UDrinkWater::Execute(TObjectPtr<AGOAPAgent> Agent, TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (GEngine && AgentController)
 	{

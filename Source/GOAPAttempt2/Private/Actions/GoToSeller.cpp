@@ -9,7 +9,7 @@
 
 #include "Navigation/PathFollowingComponent.h"
 
-void UGoToSeller::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
+void UGoToSeller::Execute(TObjectPtr<AGOAPAgent> Agent, TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (!Started)
 	{

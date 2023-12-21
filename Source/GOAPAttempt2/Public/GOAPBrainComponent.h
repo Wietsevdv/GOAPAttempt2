@@ -12,6 +12,7 @@
 #include "GOAPBrainComponent.generated.h"
 
 class AGOAPController;
+class AGOAPAgent;
 class UAction;
 
 UCLASS()
@@ -43,6 +44,7 @@ private:
 	std::queue<TObjectPtr<UAction>> ActionChain;
 
 	TObjectPtr<AGOAPController> OwningController;
+	TObjectPtr<AGOAPAgent> GOAPAgent;
 
 private:
 	//returns true when a new chain should be created

@@ -3,19 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "GOAPCharacter.generated.h"
-
-class AGOAPController;
+#include "GameFramework/Actor.h"
+#include "Axe.generated.h"
 
 UCLASS()
-class GOAPATTEMPT2_API AGOAPCharacter : public ACharacter
+class GOAPATTEMPT2_API AAxe : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this character's properties
-	AGOAPCharacter();
+	
+public:	
+	// Sets default values for this actor's properties
+	AAxe();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,6 +23,4 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	AGOAPController* GOAPController;
 };

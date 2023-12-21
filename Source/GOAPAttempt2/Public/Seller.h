@@ -6,11 +6,17 @@
 #include "GameFramework/Actor.h"
 #include "Seller.generated.h"
 
+class AAxe;
+
 UCLASS()
 class GOAPATTEMPT2_API ASeller : public AActor
 {
 	GENERATED_BODY()
 	
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AAxe> BPAxe;
+
 public:	
 	// Sets default values for this actor's properties
 	ASeller();
@@ -23,4 +29,5 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	AAxe* SellAxe();
 };

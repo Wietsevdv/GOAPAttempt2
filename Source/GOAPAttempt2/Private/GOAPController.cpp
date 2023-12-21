@@ -3,7 +3,7 @@
 
 #include "GOAPController.h"
 #include "GOAPBrainComponent.h"
-#include "GOAPCharacter.h"
+#include "GOAPAgent.h"
 
 AGOAPController::AGOAPController() :
 	Super(),
@@ -11,6 +11,11 @@ AGOAPController::AGOAPController() :
 {
 	BrainComponent = CreateDefaultSubobject<UGOAPBrainComponent>("Brain");
 	GOAPBrain = Cast<UGOAPBrainComponent>(BrainComponent);
+}
+
+AGOAPAgent* AGOAPController::GetGOAPAgent()
+{
+	return GOAPAgent;
 }
 
 void AGOAPController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
@@ -22,7 +27,7 @@ void AGOAPController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (auto Temp = Cast<AGOAPCharacter>(GetPawn()))
+	if (auto Temp = Cast<AGOAPAgent>(GetPawn()))
 	{
 		GOAPAgent = Temp;
 	}

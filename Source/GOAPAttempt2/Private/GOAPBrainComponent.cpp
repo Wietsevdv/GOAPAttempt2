@@ -2,6 +2,7 @@
 
 
 #include "GOAPBrainComponent.h"
+#include "GOAPAgent.h"
 #include "GOAPController.h"
 
 #include "Actions/ChopTree.h"
@@ -29,12 +30,13 @@ void UGOAPBrainComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	OwningController = Cast<AGOAPController>(GetOwner());
+	GOAPAgent = Cast<AGOAPAgent>(OwningController->GetPawn());
 }
 
 void UGOAPBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
 	UpdateGoal();
 	ExecuteChain(DeltaTime);
 }
@@ -96,6 +98,7 @@ bool UGOAPBrainComponent::ChainActionFor(const DesiredState& DS, TMap<WorldState
 		if (Consequences.Find(DS) != INDEX_NONE)
 		{
 			//a chained action can change the WorldStateCopy needing other actions to satisfy PC that were previously satisfied but not anymore, so -> while-loop
+			//while-loop because
 			TArray<Precondition> PreconditionsToSatisfy{};
 			const TArray<Precondition>& Preconditions = Action->GetPreconditions();
 			while (IsAnyPreconditionFalse(Preconditions, PreconditionsToSatisfy, WorldStatesCopy))
@@ -149,7 +152,7 @@ void UGOAPBrainComponent::ExecuteChain(float DeltaTime)
 	bool bIsActionFinished{ false };
 	TObjectPtr<UAction> TopAction = ActionChain.front();
 
-	TopAction->Execute(OwningController, bIsActionFinished, DeltaTime);
+	TopAction->Execute(GOAPAgent, OwningController, bIsActionFinished, DeltaTime);
 	if (bIsActionFinished)
 	{
 		ApplyWorldStateChanges(TopAction, WorldStates);
@@ -191,10 +194,10 @@ void UGOAPBrainComponent::SetWorldStates()
 	
 	//lumberjack
 	WorldStates.Emplace(WorldState::HaveWood, false);
-	WorldStates.Emplace(WorldState::HaveAxe, true);
+	WorldStates.Emplace(WorldState::HaveAxe, false);
 
 	//economics
-	WorldStates.Emplace(WorldState::HaveMoney, false);
+	WorldStates.Emplace(WorldState::HaveMoney, true);
 	WorldStates.Emplace(WorldState::HaveWater, true);	//true for now
 	WorldStates.Emplace(WorldState::HaveFood, true);	//true for now
 

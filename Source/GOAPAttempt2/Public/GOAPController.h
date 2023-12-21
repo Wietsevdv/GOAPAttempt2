@@ -7,7 +7,7 @@
 #include "GOAPController.generated.h"
 
 class UGOAPBrainComponent;
-class AGOAPCharacter;
+class AGOAPAgent;
 
 UCLASS()
 class GOAPATTEMPT2_API AGOAPController : public AAIController
@@ -18,12 +18,14 @@ class GOAPATTEMPT2_API AGOAPController : public AAIController
 
 private:
 	UGOAPBrainComponent* GOAPBrain;
-	AGOAPCharacter* GOAPAgent;
+	AGOAPAgent* GOAPAgent;
 
 	ReachedGoTo DReachedGoTo;
 
 public:
 	AGOAPController();
+
+	AGOAPAgent* GetGOAPAgent();
 
 	ReachedGoTo& GetReachedGoToDelegate() { return DReachedGoTo; }
 	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;

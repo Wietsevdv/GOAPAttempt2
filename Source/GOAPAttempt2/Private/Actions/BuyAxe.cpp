@@ -4,24 +4,28 @@
 #include "Actions/BuyAxe.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "GOAPAgent.h"
 #include "GOAPController.h"
 #include "Seller.h"
+#include "Axe.h"
 
-void UBuyAxe::Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
+void UBuyAxe::Execute(TObjectPtr<AGOAPAgent> Agent, TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime)
 {
 	if (!Started)
 	{
-		Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>(ASeller::StaticClass())));
-	}
+		if (Seller = Cast<ASeller>(UGameplayStatics::GetActorOfClass(this, TSubclassOf<ASeller>(ASeller::StaticClass()))))
+		{
+			if (TObjectPtr<AAxe> Axe{ Seller->SellAxe() })
+			{
+				Agent->SetAxe(Axe);
 
-	Timer += DeltaTime;
-	if (Timer >= 2.f)
-	{
-		Started = false;
+				Started = false;
 
-		Timer = 0.f;
-		Seller = nullptr;
+				Timer = 0.f;
+				Seller = nullptr;
 
-		bActionFinished = true;
+				bActionFinished = true;
+			}
+		}
 	}
 }

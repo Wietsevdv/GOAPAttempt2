@@ -24,5 +24,5 @@ public:
 	virtual const TArray<Precondition>& GetPreconditions() const override { return Preconditions; }
 	virtual const TArray<Consequence>& GetConsequences() const override { return Consequences; }
 
-	virtual void Execute(TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) override;
+	virtual void Execute(TObjectPtr<AGOAPAgent> Agent, TObjectPtr<AGOAPController> AgentController, bool& bActionFinished, float DeltaTime) override;
 };
