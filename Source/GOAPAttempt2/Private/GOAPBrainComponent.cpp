@@ -15,6 +15,8 @@
 #include "Actions/GoToSeller.h"
 #include "Actions/GoToBuyer.h"
 
+#include "Axe.h"
+
 UGOAPBrainComponent::UGOAPBrainComponent() :
 	Super(),
 	CurrentGoal{ WorldState::Chilling, true },		//guaranteed to be overwritten (for now)+=
@@ -230,6 +232,44 @@ void UGOAPBrainComponent::SetGoals()
 
 	Goals.Emplace(Precondition{ WorldState::HaveMoney, false }, DesiredState{ WorldState::HaveMoney, true });
 	Goals.Emplace(Precondition{ WorldState::HaveAxe, false }, DesiredState{ WorldState::HaveAxe, true });
+
+	////TESTS
+	//TGoals.Emplace(TPrecondition{ WorldState::HaveMoney, Value{ 0 } }, TDesiredState{ WorldState::HaveMoney, Value{ 100 } });
+	//TGoals.Emplace(TPrecondition{ WorldState::HaveMoney, Value{ 0.f } }, TDesiredState{ WorldState::HaveMoney, Value{ 100.f } });
+	////TGoals.Emplace(TPrecondition{ WorldState::HaveMoney, Value{ AAxe{} } }, TDesiredState{ WorldState::HaveMoney, Value{ AAxe{} } });
+
+	//Value V1{ 0 };
+	//Value V2{ 1 };
+	//Value V3{ 0 };
+	//Value V4{ 0.f };
+	//Value V5{ 1.f };
+	//Value V6{ 0.f };
+	//if (!V1.IsEqual(V2))
+	//{
+	//	if (GEngine)
+	//		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "V1 and V2 not equal");
+	//}
+
+	//if (V1.IsEqual(V3))
+	//{
+	//	if (GEngine)
+	//		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "V1 and V3 equal");
+	//}
+
+	//if (!V4.IsEqual(V5))
+	//{
+	//	if (GEngine)
+	//		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "V1 and V2 not equal");
+	//}
+
+	//if (V4.IsEqual(V6))
+	//{
+	//	if (GEngine)
+	//		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "V1 and V3 equal");
+	//}
+
+	BoolIntFloatValue bla{ false };
+	BoolIntFloatValue blabla{ 0.2f };
 }
 
 void UGOAPBrainComponent::AddAction(TObjectPtr<UAction> Action)

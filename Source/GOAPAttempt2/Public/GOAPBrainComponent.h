@@ -38,6 +38,7 @@ private:
 	TMap<WorldState, TArray<TObjectPtr<UAction>>> Actions;
 
 	TArray<ConditionalGoal> Goals;
+	//TArray<TConditionalGoal> TGoals;
 
 	DesiredState CurrentGoal;
 
